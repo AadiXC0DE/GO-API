@@ -1,9 +1,10 @@
 package main
 
-import(
+import (
+	"errors"
 	"net/http"
+
 	"github.com/gin-gonic/gin"
-	//"errors"
 )
 
 type book struct{
@@ -24,6 +25,28 @@ func getBooks(c *gin.Context){
 
 }
 
+func bookById(c *gin.Context){
+	id:=c.Param("id")
+	book,err:=getBookById(id)
+
+	if err!=nil{
+		c.IndentedJSON(http.StatusNotFound,gin.H{"message":"Book Not Found"})
+		return
+	}
+	c.IndentedJSON(http.StatusOK,book)
+}
+
+func getBookById(id string)(*book,error){
+	for i,b:=range books{
+		if b.ID==id{
+			return &books[i],nil
+		}
+	}
+
+	return nil,errors.New("book not found")
+
+}
+
 func createBook(c *gin.Context){
 	var newBook book
 
@@ -38,6 +61,7 @@ func createBook(c *gin.Context){
 func main(){
 	router:=gin.Default()
 	router.GET("/books",getBooks)
+	router.GET("/books/:id",bookById)
 	router.POST("/books",createBook)
 	router.Run("localhost:3000")
 }
