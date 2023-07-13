@@ -56,6 +56,23 @@ func bookById(c *gin.Context){
 	c.IndentedJSON(http.StatusOK,book)
 }
 
+func returnBook(c *gin.Context){
+	id,ok :=c.GetQuery("id")
+
+	if !ok{
+		c.IndentedJSON(http.StatusBadRequest,gin.H{"message":"Missing id query parameter"})
+		return 
+	}
+	book,err :=getBookById(id)
+	if err!=nil{
+		c.IndentedJSON(http.StatusNotFound,gin.H{"message":"Book Not Found"})
+		return
+	}
+	book.Quantity+=1
+	c.IndentedJSON(http.StatusOK,book)
+
+}
+
 func getBookById(id string)(*book,error){
 	for i,b:=range books{
 		if b.ID==id{
@@ -84,5 +101,6 @@ func main(){
 	router.GET("/books/:id",bookById)
 	router.POST("/books",createBook)
 	router.PATCH("/checkout",checkoutBook)
+	router.PATCH("/return",returnBook)
 	router.Run("localhost:3000")
 }
